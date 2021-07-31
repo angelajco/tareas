@@ -1,0 +1,13 @@
+.tabla-cabecera{
+    background-color: #5AA2F2;
+}
+
+.tabla-datos{
+    background-color: #5DD3FC;
+}
+
+@media (max-width: 767px) {
+    .inputs-form{
+        margin-top: 15px;
+    }
+}
