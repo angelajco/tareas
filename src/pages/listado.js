@@ -1,10 +1,12 @@
 //Biblioteca que da acceso al backend que se conectará con back4app
 import Parse from 'parse/dist/parse.min.js';
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, Fragment } from 'react'
 import { Form, OverlayTrigger, Tooltip, Button, Table } from 'react-bootstrap'
 import { useForm } from "react-hook-form";
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck, faEdit, faPause, faPlay, faStop, faSyncAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Timer from 'react-compound-timer'
 
@@ -26,6 +28,8 @@ export default function Listado() {
     const leerTareas = async function () {
         //Lectura de objetos de "Tareas"
         const parseQuery = new Parse.Query('Tareas');
+        //Se ponen las tareas completadas hasta el final
+        parseQuery.ascending("completada");
         //Si se pudieron obtener las tareas
         try {
             //Find va por todos los objetos
@@ -49,7 +53,7 @@ export default function Listado() {
         try {
             //Crea una nueva instancia de objeto
             const Tarea = new Parse.Object('Tareas');
-            //Se definen los atributos que se quieren pasar al objetgo
+            //Se definen los atributos que se quieren pasar al objeto
             Tarea.set('nombre', `${data.nombre}`);
             Tarea.set('descripcion', `${data.descripcion}`);
             Tarea.set('duracion', duracion);
@@ -57,6 +61,7 @@ export default function Listado() {
             //Guarda en back4app
             await Tarea.save();
             alert('Tarea guardada');
+            //Se leen de nuevo todos los valores
             leerTareas();
         } catch (error) {
             //Muestra error de que no se pudo guardar tarea
@@ -96,6 +101,45 @@ export default function Listado() {
         setTimeout(() => {
             setMuestraContador(true)
         }, 1)
+    }
+
+    //Referencia para obtener el tiempo actual del contador
+    const contador = useRef(null);
+    //Cuando se finaliza una tarea
+    const finalizar = (duracion) => {
+        //variable donde se guardará el tiempo final
+        let tiempoFinal;
+        //Se obtiene el tiempo que se llevó acabo la tarea y se divide entre 1000 para obtener los segundos
+        let tiempo = Math.floor(contador.current.getTime() / 1000)
+        if (tiempo < 0) {
+            tiempoFinal = 0;
+        } else {
+            tiempoFinal = duracion - tiempo;
+        }
+    }
+
+    const editar = () => {
+
+    }
+
+    //Funcion para eliminar una tarea
+    const eliminar = async function (id) {
+        //Se crea un nuevo objeto tarea y asigna el id
+        let tarea = new Parse.Object('Tareas');
+        tarea.set('objectId', id);
+        try {
+            // .destroy destruye el objeto
+            await tarea.destroy();
+            //Se leen de nuevo todos los valores
+            leerTareas();
+            alert('Se ha eliminado la tarea satisfactoriamente');
+            return true;
+        } catch (error) {
+            //En caso de que haya un error en la conexion
+            console.log(`Error ${error.message}`);
+            alert("No se pudo eliminar la tarea, intente de nuevo por favor");
+            return false;
+        };
     }
 
     return (
@@ -139,7 +183,6 @@ export default function Listado() {
                                         <tr className="tabla-cabecera">
                                             <th className="tw-text-center">Nombre</th>
                                             <th className="tw-text-center">Descripción</th>
-                                            <th className="tw-text-center">Completada</th>
                                             <th className="tw-text-center">Duración</th>
                                             <th className="tw-text-center">Acciones</th>
                                         </tr>
@@ -158,49 +201,96 @@ export default function Listado() {
                                                                     <tr className="tabla-datos" {...provided.draggableProps} {...provided.dragHandleProps} ref={provided.innerRef}>
                                                                         <th>{valor.get('nombre')}</th>
                                                                         <th>{valor.get('descripcion')}</th>
-                                                                        {
-                                                                            valor.get('completada') === true ? (
-                                                                                <th>Sí</th>
-                                                                            ) : (
-                                                                                <th>No</th>
-                                                                            )
-                                                                        }
                                                                         <th>
                                                                             {
                                                                                 // Verificamos que existe para que se vuelva a renderizar
-                                                                                muestraContador === true && (
+                                                                                (muestraContador === true && valor.get('completada') === false) ? (
                                                                                     <Timer
                                                                                         //Se multiplica por 1000 ya que se maneja en milisegundos
                                                                                         initialTime={valor.get('duracion') * 1000}
                                                                                         lastUnit="h"
                                                                                         direction="backward"
-                                                                                        startImmediately={false}>
+                                                                                        startImmediately={false}
+                                                                                        timeToUpdate={900}
+                                                                                        ref={index === 0 ? contador : null}
+                                                                                    >
                                                                                         {({ start, pause, stop, reset }) => (
                                                                                             <>
-                                                                                                <Timer.Hours /> horas <Timer.Minutes /> minutos <Timer.Seconds /> segundos
+                                                                                                <span>
+                                                                                                    <Timer.Hours /> hora(s) <Timer.Minutes /> minuto(s) <Timer.Seconds /> segundo(s)
+                                                                                                </span>
                                                                                                 <br />
                                                                                                 {
                                                                                                     // Solo se mostrara en el index 0 el control de los botones
                                                                                                     index === 0 && (
                                                                                                         <div className="tw-mt-3 tw-inline-flex tw-flex-wrap tw-gap-4">
-                                                                                                            <Button onClick={start} variant="light" className="boton-tiempo">Iniciar</Button>
-                                                                                                            <Button onClick={pause} variant="light" className="boton-tiempo">Pausar</Button>
-                                                                                                            <Button onClick={stop} variant="light" className="boton-tiempo">Parar</Button>
-                                                                                                            <Button onClick={reset} variant="light" className="boton-tiempo">Restablecer</Button>
+                                                                                                            <OverlayTrigger rootClose overlay={<Tooltip>Empezar</Tooltip>}>
+                                                                                                                <Button onClick={start} variant="light" className="boton-tiempo">
+                                                                                                                    <FontAwesomeIcon icon={faPlay} />
+                                                                                                                </Button>
+                                                                                                            </OverlayTrigger>
+                                                                                                            <OverlayTrigger rootClose overlay={<Tooltip>Pausar</Tooltip>}>
+                                                                                                                <Button onClick={pause} variant="light" className="boton-tiempo">
+                                                                                                                    <FontAwesomeIcon icon={faPause} />
+                                                                                                                </Button>
+                                                                                                            </OverlayTrigger>
+                                                                                                            <OverlayTrigger rootClose overlay={<Tooltip>Parar</Tooltip>}>
+                                                                                                                <Button onClick={stop} variant="light" className="boton-tiempo">
+                                                                                                                    <FontAwesomeIcon icon={faStop} />
+                                                                                                                </Button>
+                                                                                                            </OverlayTrigger>
+                                                                                                            <OverlayTrigger rootClose overlay={<Tooltip>Restablecer</Tooltip>}>
+                                                                                                                <Button onClick={reset} variant="light" className="boton-tiempo">
+                                                                                                                    <FontAwesomeIcon icon={faSyncAlt} />
+                                                                                                                </Button>
+                                                                                                            </OverlayTrigger>
                                                                                                         </div>
                                                                                                     )
                                                                                                 }
                                                                                             </>
                                                                                         )}
                                                                                     </Timer>
+                                                                                ) : (
+                                                                                    <p>Esta tarea finalizó. ¡Pon otra en curso!</p>
                                                                                 )
                                                                             }
                                                                         </th>
-                                                                        <th></th>
+                                                                        <th>
+                                                                            <div className="tw-inline-flex tw-flex-wrap tw-gap-4">
+                                                                                {
+                                                                                    [
+                                                                                        valor.get('completada') === false && (
+                                                                                            <Fragment key="1">
+                                                                                                {
+                                                                                                    index === 0 && (
+                                                                                                        <OverlayTrigger rootClose overlay={<Tooltip>Finalizar</Tooltip>}>
+                                                                                                            <Button onClick={() => finalizar(valor.get('duracion'))} variant="light" className="boton-tiempo">
+                                                                                                                <FontAwesomeIcon icon={faCheck} />
+                                                                                                            </Button>
+                                                                                                        </OverlayTrigger>
+                                                                                                    )
+                                                                                                }
+                                                                                                <OverlayTrigger rootClose overlay={<Tooltip>Editar</Tooltip>}>
+                                                                                                    <Button onClick={editar} variant="light" className="boton-tiempo">
+                                                                                                        <FontAwesomeIcon icon={faEdit} />
+                                                                                                    </Button>
+                                                                                                </OverlayTrigger>
+                                                                                            </Fragment>
+                                                                                        )
+                                                                                    ]
+                                                                                }
+                                                                                <OverlayTrigger rootClose overlay={<Tooltip>Eliminar</Tooltip>}>
+                                                                                    <Button onClick={() => eliminar(valor.id)} variant="light" className="boton-tiempo">
+                                                                                        <FontAwesomeIcon icon={faTrash} />
+                                                                                    </Button>
+                                                                                </OverlayTrigger>
+                                                                            </div>
+                                                                        </th>
                                                                     </tr>
                                                                 )}
                                                             </Draggable>
-                                                        ))
+                                                        )
+                                                        )
                                                     }
                                                     {/* Se usa para llenar el espacio que ocupaba el elemento que estamos arrastrando */}
                                                     {provided.placeholder}

@@ -1,5 +1,10 @@
 @tailwind utilities;
 
-#root{
-    background: linear-gradient(180deg, rgba(242, 123, 99, 1) 0%, rgba(230, 105, 159, 1) 100%);
+#root, body{
+    height: 100vh;
+}
+body{
+    background: linear-gradient(#f27b63,#e6699f);
+    background-attachment: fixed;
+    background-repeat: no-repeat;
 }
