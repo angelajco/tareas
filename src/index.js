@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './styles/globals.css'
 
 import App from './App';
-import Encabezado from './components/Encabezado'
+import Encabezado from './components/Encabezado';
 
 ReactDOM.render(
   <React.StrictMode>

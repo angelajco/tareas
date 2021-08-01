@@ -5,7 +5,9 @@
 .tabla-datos{
     background-color: #5DD3FC;
 }
-
+.boton-tiempo{
+    min-width: 70px;
+}
 @media (max-width: 767px) {
     .inputs-form{
         margin-top: 15px;

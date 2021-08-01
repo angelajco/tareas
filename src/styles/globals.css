@@ -1,5 +1,5 @@
 @tailwind utilities;
 
-body{
+#root{
     background: linear-gradient(180deg, rgba(242, 123, 99, 1) 0%, rgba(230, 105, 159, 1) 100%);
 }
