@@ -82,7 +82,6 @@ export default function Listado() {
     function handleOnDragEnd(result) {
         //Para ocultar temporalmente los contadores
         setMuestraContador(false)
-        // setTareas([]);
         // Si el destino existe, esto es para evitar cuando se arrastra fuera del contenedor
         if (!result.destination) {
             return
@@ -106,16 +105,36 @@ export default function Listado() {
     //Referencia para obtener el tiempo actual del contador
     const contador = useRef(null);
     //Cuando se finaliza una tarea
-    const finalizar = (duracion) => {
+    const finalizar = async (valor) => {
         //variable donde se guardará el tiempo final
         let tiempoFinal;
         //Se obtiene el tiempo que se llevó acabo la tarea y se divide entre 1000 para obtener los segundos
         let tiempo = Math.floor(contador.current.getTime() / 1000)
+        //Si el tiempo es menor que 0 el tiempo final es 0, es decir, se uso el tiempo completo para finalizarla
         if (tiempo < 0) {
-            tiempoFinal = 0;
+            tiempoFinal = valor.get('duracion')
         } else {
-            tiempoFinal = duracion - tiempo;
+            //Si no, se hace el calculo de tiempo en cuanto tiempo se tardo finalizarla
+            tiempoFinal = valor.get('duracion') - tiempo;
         }
+        console.log(tiempoFinal, "tiempoFinal")
+        let tareaMod = new Parse.Object('Tareas');
+        tareaMod.set('objectId', valor.id);
+        //Se guarda el valor en lo que se acompleto la tarea
+        tareaMod.set('finalizado', tiempoFinal);
+        //Se completo la tarea
+        tareaMod.set('completada', true);
+        try {
+            //Se guarda la modificación
+            await tareaMod.save();
+            alert('Se ha finalizado la tarea con exito');
+            leerTareas();
+            return true;
+        } catch (error) {
+            console.log(`Error: ${error.message}`)
+            alert(`No se ha podido finalizar la tarea`);
+            return false;
+        };
     }
 
     const editar = () => {
@@ -156,17 +175,17 @@ export default function Listado() {
                                 {errors.nombre && <p className="tw-text-white">La longitud no debe ser mayor de 15 caracteres</p>}
                             </Form.Group>
                             <Form.Group controlId="duracion" className="col-12 col-md-4 inputs-form">
-                                <Form.Label>Duración en segundos *</Form.Label>
+                                <Form.Label>Duración (segundos) *</Form.Label>
                                 <Form.Control type="number" step="1" min="1" max="7200" list="tiempo" required {...register("duracion")} />
                                 <Form.Text className="text-muted tw-block"> (1 hora = 3600 segundos)</Form.Text>
                             </Form.Group>
                             <datalist id="tiempo">
-                                <option value="15">15 minutos</option>
-                                <option value="30">30 minutos</option>
+                                <option value="900">15 minutos (900 segundos)</option>
+                                <option value="1800">30 minutos (1800 segundos)</option>
                                 <option value="3600">1 hora (3600 segundos)</option>
                             </datalist>
                             <Form.Group controlId="descripcion" className="col-12 col-md-4 inputs-form">
-                                <Form.Label>Descripción *</Form.Label>
+                                <Form.Label>Descripción</Form.Label>
                                 <Form.Control type="text" required {...register("descripcion")} />
                             </Form.Group>
                             <div className="col-12 tw-text-center tw-mt-6">
@@ -264,7 +283,7 @@ export default function Listado() {
                                                                                                 {
                                                                                                     index === 0 && (
                                                                                                         <OverlayTrigger rootClose overlay={<Tooltip>Finalizar</Tooltip>}>
-                                                                                                            <Button onClick={() => finalizar(valor.get('duracion'))} variant="light" className="boton-tiempo">
+                                                                                                            <Button onClick={() => finalizar(valor)} variant="light" className="boton-tiempo">
                                                                                                                 <FontAwesomeIcon icon={faCheck} />
                                                                                                             </Button>
                                                                                                         </OverlayTrigger>

@@ -1,4 +1,5 @@
 import Listado from './pages/listado'
+import Historial from './pages/historial'
 //Importaciones para uso de React Router
 import {
   BrowserRouter as Router,
@@ -54,7 +55,7 @@ function App() {
           </Route>
           {/* en la url /historial muestra el componente Historial */}
           <Route path="/historial">
-            Historial
+            <Historial />
           </Route>
         </Switch>
       </Router>
