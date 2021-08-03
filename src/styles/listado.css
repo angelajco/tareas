@@ -10,3 +10,10 @@
         margin-top: 15px;
     }
 }
+
+@media (max-width: 576px) {
+    .filtro{
+        display: block !important;
+        margin-bottom: 15px;
+    }
+}

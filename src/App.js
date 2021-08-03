@@ -15,21 +15,21 @@ function App() {
     <>
       {/* Router permite hacer la dirección a las páginas */}
       <Router>
-        <Container className="tw-text-2xl">
+        <Container className="tw-text-2xl tw-mb-6">
           <Nav activeKey="/" className="justify-content-center">
             <Nav.Item>
               {/* Nav Link se usa como Link de React Router */}
-              <Nav.Link as={Link} to="/">
+              <Nav.Link as={Link} to="/" className="tw-text-black hover:tw-text-black hover:tw-font-bold">
                 Página principal
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={Link} to="/listado">
+              <Nav.Link as={Link} to="/listado" className="tw-text-black hover:tw-text-black hover:tw-font-bold">
                 Listado
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link as={Link} to="/historial">
+              <Nav.Link as={Link} to="/historial" className="tw-text-black hover:tw-text-black hover:tw-font-bold">
                 Historial
               </Nav.Link>
             </Nav.Item>
@@ -43,7 +43,7 @@ function App() {
             <div className="container tw-text-center">
               <div className="row">
                 <div className="col-12">
-                  <h2>Organiza tus actividades</h2>
+                  <h2 className="tw-mb-3">Organiza tus actividades</h2>
                   <Image src="/reloj.png" alt="reloj" fluid width="100px" />
                 </div>
               </div>

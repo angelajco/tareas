@@ -26,6 +26,10 @@ export default function Historial() {
         const parseQuery = new Parse.Query('Tareas');
         //Se ponen las tareas solo completadas
         parseQuery.equalTo('completada', true);
+        //Obtenemos las tareas solo de la ultima semana
+        let semanaAnterior = new Date();
+        semanaAnterior.setDate(semanaAnterior.getDate() - 7);
+        parseQuery.greaterThan('createdAt', semanaAnterior);
         //Si se pudieron obtener las tareas
         try {
             let arrayTempTareas = []

@@ -78,10 +78,12 @@ export default function Listado() {
             alert('Tarea guardada');
             //Se leen de nuevo todos los valores
             leerTareas();
+            return true;
         } catch (error) {
             //Muestra error de que no se pudo guardar tarea
             console.log('Error guardando tarea:', error);
             alert('No se ha podido guardar la tarea');
+            return false;
         }
     }
 
@@ -167,7 +169,7 @@ export default function Listado() {
             leerTareas();
             return true;
         } catch (error) {
-            console.log(`Error: ${error.message}`)
+            // console.log(`Error: ${error.message}`)
             alert(`No se ha podido editar la tarea`);
             return false;
         };
@@ -209,7 +211,7 @@ export default function Listado() {
             return true;
         } catch (error) {
             //En caso de que haya un error en la conexion
-            console.log(`Error ${error.message}`);
+            // console.log(`Error ${error.message}`);
             alert("No se pudo eliminar la tarea, intente de nuevo por favor");
             return false;
         };
@@ -218,10 +220,14 @@ export default function Listado() {
     //Para guardar el valor del filtro para mostrar las tareas
     const [filtro, setFiltro] = useState(0)
 
+    //Para rellenar 50 tareas aleatorias
     const rellenaTareas = async () => {
-        for (let i = 0; i <= 2; i++) {
+        for (let i = 0; i <= 50; i++) {
+            //se obtiene una duracion de 1 a 7200 segundos
             let opcionDuracion = Math.floor(Math.random() * (7200 - 1 + 1)) + 1;
+            //se obtiene un porcentaje del 80% al 100%
             let porcentaje = Math.floor(Math.random() * (100 - 80 + 1)) + 80;
+            //se calcula un tiempo de terminacion de entre el 80 y 100 de la duracion
             let tiempoFinalizado = parseInt(Math.floor((opcionDuracion / 100) * porcentaje));
             try {
                 let tarea = new Parse.Object('Tareas');
@@ -230,8 +236,10 @@ export default function Listado() {
                 tarea.set('completada', true);
                 tarea.set('finalizado', tiempoFinalizado);
                 await tarea.save();
+                return true;
             } catch (error) {
-                console.log(`No se pudo guardar esta tarea, error ${error.message}`);
+                // console.log(`No se pudo guardar esta tarea, error ${error.message}`);
+                return false;
             };
         }
         leerTareas();
@@ -243,56 +251,28 @@ export default function Listado() {
         // eslint-disable-next-line
     }, [filtro])
 
-    const paraReloj = async () => {
-        if (contador.current !== null) {
-            if (tareas[0] !== undefined) {
-                if (tareas[0].get('completada') !== true) {
-                    let tareaMod = new Parse.Object('Tareas');
-                    //Asignamos atributos
-                    tareaMod.set('objectId', tareas[0].id);
-                    tareaMod.set('duracion', 20);
-                    try {
-                        //Se guarda la modificación
-                        await tareaMod.save();
-                        console.log("Se ha guardado la tarea al cerrarse el navegador")
-                        return true;
-                    } catch (error) {
-                        console.log(`Error: ${error.message}`)
-                        return false;
-                    };
-                }
-            }
-        }
-    }
-
-    // useEffect(() => {
-    // window.addEventListener("beforeunload", (event) => {
-    // event.preventDefault();
-    // paraReloj();
-    // });
-    // eslint-disable-next-line
-    // }, [tareas])
-
 
     useEffect(() => {
+        //Se ejecuta cuando se cierra el navegador o se refresca
         window.addEventListener('beforeunload', async (e) => {
             const paraReloj = async () => {
+                //Para saber si hay un contador activo
                 if (contador.current !== null) {
+                    //verifica que tareas ya ha sido leido
                     if (tareas[0] !== undefined) {
                         if (tareas[0].get('completada') !== true) {
                             let tareaMod = new Parse.Object('Tareas');
                             let tiempo = parseInt(contador.current.getTime() / 1000)
-                            console.log(tiempo, "getTime")
                             //Asignamos atributos
                             tareaMod.set('objectId', tareas[0].id);
                             tareaMod.set('duracion', tiempo);
                             try {
                                 //Se guarda la modificación
                                 await tareaMod.save();
-                                console.log("Se ha guardado la tarea al cerrarse el navegador")
+                                // console.log("Se ha guardado la tarea al cerrarse el navegador")
                                 return true;
                             } catch (error) {
-                                console.log(`Error: ${error.message}`)
+                                // console.log(`Error: ${error.message}`)
                                 return false;
                             };
                         }
@@ -300,8 +280,7 @@ export default function Listado() {
                 }
             }
             paraReloj();
-        }
-        )
+        })
     }, [tareas])
 
     return (
@@ -315,7 +294,7 @@ export default function Listado() {
 
             <div className="container">
                 <div className="row">
-                    <div className="col-12 tw-mt-6">
+                    <div className="col-12 tw-mt-6 tw-mb-6">
                         {/* Se ejecuta la función agregaTarea cuando se da submit */}
                         <Form onSubmit={handleSubmit(agregaTarea)} className="row">
                             <Form.Group controlId="nombre" className="col-12 col-md-4">
@@ -343,17 +322,19 @@ export default function Listado() {
                             </div>
                         </Form>
                     </div>
-                    <div className="col-12 col-sm-6">
-                        <Button onClick={rellenaTareas}>Rellena tareas</Button>
-                    </div>
-                    <div className="col-12 col-sm-6 tw-text-white tw-text-right">
-                        <p className="tw-font-bold">Filtra las tareas por su duración</p>
-                        <select onChange={(e) => setFiltro(parseInt(e.target.value))} name="filtro">
-                            <option value={0}>Todas</option>
-                            <option value={1}>De 30 minutos o menos</option>
-                            <option value={2}>Entre 30 minutos y 1 hora</option>
-                            <option value={3}>Más de 1 hora</option>
-                        </select>
+                    <div className="col-12">
+                        <div className="tw-inline-block filtro">
+                            <Button onClick={rellenaTareas}>Rellenar tareas</Button>
+                        </div>
+                        <div className="tw-text-white tw-inline-block filtro">
+                            <p className="tw-font-bold">Filtra las tareas por su duración</p>
+                            <select onChange={(e) => setFiltro(parseInt(e.target.value))} name="filtro">
+                                <option value={0}>Todas</option>
+                                <option value={1}>De 30 minutos o menos</option>
+                                <option value={2}>Entre 30 minutos y 1 hora</option>
+                                <option value={3}>Más de 1 hora</option>
+                            </select>
+                        </div>
                     </div>
                     {
                         // Si existen tareas se muestra la tabla
