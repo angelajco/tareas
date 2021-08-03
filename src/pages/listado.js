@@ -326,7 +326,7 @@ export default function Listado() {
                         <div className="tw-inline-block filtro">
                             <Button onClick={rellenaTareas}>Rellenar tareas</Button>
                         </div>
-                        <div className="tw-text-white tw-inline-block filtro">
+                        <div className="tw-text-white tw-inline-block filtro tw-float-right">
                             <p className="tw-font-bold">Filtra las tareas por su duración</p>
                             <select onChange={(e) => setFiltro(parseInt(e.target.value))} name="filtro">
                                 <option value={0}>Todas</option>
